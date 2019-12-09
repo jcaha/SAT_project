@@ -55,7 +55,7 @@ if __name__ == "__main__":
         testList = funcList[:testNum]
         valList = funcList[testNum:testNum+valNum]
         trainList = funcList[testNum+valNum: testNum+valNum+trainNum]
-        funcList = testList + valList + trainList 
+        funcList = testList + valList + trainList
         writeList(testList, testListPath)
         writeList(valList, valListPath)
         writeList(trainList, trainListPath)
@@ -112,4 +112,3 @@ if __name__ == "__main__":
     testPairFile.close()
     valPairFile.close()
     trainPairFile.close()
-
