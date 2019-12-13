@@ -1,8 +1,9 @@
 from javalang.ast import Node
 import javalang
 import os
+from queue import Queue
 
-num = 0
+
 def nodeStr(rawNode):
     return type(rawNode).__name__
 
@@ -24,7 +25,7 @@ def buildTree(rawTree):
     if not isinstance(rawTree, (str,Node)):
         return None, 0
     elif isinstance(rawTree, str):
-        if rawTree == '' or rawTree[0] == '"' or rawTree[0] == "'":
+        if rawTree == '' or rawTree[0] == '"' or rawTree[0] == "'" or rawTree.startswith("/*"):
             return None, 0
         astTree = {
             'name': str(rawTree),
@@ -48,6 +49,34 @@ def buildTree(rawTree):
 
     return astTree, nodeNum
 
+
+def getAstNodeList(root):
+    # print(root, type(root))
+    if '\n' in root['name']:
+        print(root['name'])
+    nodeList = [root['name']]
+    for child in root['children']:
+        nodeList.extend(getAstNodeList(child))
+    return nodeList
+
+
+def getChildrenList(root):
+    wordList = []
+    childrenList = []
+    nodeQ = []
+    nodeQ.append((root,-1))
+    while len(nodeQ) > 0:
+        root, parentID = nodeQ.pop(0)
+        childrenList.append([])
+        wordList.append(root['name'])
+        ind = len(childrenList) - 1
+        for child in root['children']:
+            nodeQ.append((child, ind))
+        if parentID >= 0:
+            childrenList[parentID].append(ind)
+    return childrenList, wordList
+
+
 def getAstTree(filename):
     with open(filename, 'r') as f:
         data = f.read()
@@ -63,7 +92,12 @@ if __name__ == "__main__":
     # # for child in rawTree.children:
     # #     print(child)
     root, nodeNum = getAstTree('../data/bigclonebenchdata/40044.txt')
-    # root['name'] = 'MethodDeclaration'
     print(root)
-    print(nodeNum)
+    clist, wlist = getChildrenList(root)
+    print(clist)
+    print(wlist)
+    # root['name'] = 'MethodDeclaration'
+    # nodeList = getAstNodeList(root)
+    # print(nodeList)
+    # print(nodeNum)
     # f.close()
