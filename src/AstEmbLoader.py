@@ -1,16 +1,30 @@
 import os
 import torch
+import numpy as np
 from torch.utils.data import Dataset, DataLoader
 
 from treeBuilder import getChildrenList
+
 
 def alignChildren(childrenList):
     '''
     childrenList: N x nodeNum x childrenNum
     '''
     maxNum = max([len(children) for s in childrenList for children in s])
-    returnList = [[c+[0]*(maxNum-len(c)) for c in s] for s in childrenList] 
+    returnList = [[c+[0]*(maxNum-len(c)) for c in s] for s in childrenList]
+    # returnList = [[[np.array(1)] for c in s] for s in childrenList]
+    # print(returnList[0][50])
+    # print(len(returnList[0][2]))
+    maxNode = max([len(s) for s in childrenList])
+    returnList = [s+[[0]*maxNum]*(maxNode-len(s)) for s in returnList]
     return returnList
+
+
+def alignEmbedding(embList):
+    maxNode = max([len(emb) for emb in embList])
+    emb_size = len(embList[0][0])
+    embList = [emb + [np.zeros(emb_size)]*(maxNode-len(emb)) for emb in embList]
+    return embList
 
 
 class AstEmbDataset(Dataset):
@@ -38,11 +52,14 @@ class AstEmbDataset(Dataset):
             embs2.append(emb2)
             labels.append(label)
         roots = alignChildren(roots1 + roots2)
-        embs = embs1 + embs2
+        roots = np.array(roots)
+        embs = alignEmbedding(embs1 + embs2)
+        embs = np.array(embs, dtype=np.float32)
+        labels = np.array(labels, dtype=np.float32)
         return roots, embs, labels
 
     def __len__(self):
-        return len(self.treeList)//self.batch_size
+        return len(self.pairList)//self.batch_size
 
     def getData(self, treeName):
         root = self.treeList[treeName]

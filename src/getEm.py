@@ -37,7 +37,7 @@ def getEmbDict(embDictPath, treeList=None):
 
     print("-------------- start generate embedding ---------------")
 
-    for num, tree in enumerate(treeList):
+    for num, tree in enumerate(treeList.values()):
         wordList.extend(getAstNodeList(tree))
         wordList = list(set(wordList))
         if num%300 == 299:
@@ -78,5 +78,5 @@ if __name__ == "__main__":
         treeList.append(root)
         if ind%300 == 299:
             print('{} trees finished.'.format(ind+1))
-    
+
     getEmbDict(embPath, treeList=treeList)
