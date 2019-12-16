@@ -26,7 +26,7 @@ class TBCNN(nn.Module):
         feature = gatherFeature(childrenList, nodeEmb)  # feature: (batch_size, max_node_num, max_children_num+1, feature)
         weights = convWeights(childrenList)  # (batch_size, max_node_num, max_children_num+1, 3)
         # print(feature.dtype, weights.dtype)
-        weightedFeature = torch.matmul(feature.transpose(2,3), weights)  # weight of Ws: (batch_size, max_node_num, feature, 3)
+        weightedFeature = torch.matmul(weights.transpose(2,3), feature)  # weight of Ws: (batch_size, max_node_num, feature, 3)
         weightedFeature = weightedFeature.reshape(batch_size, max_node_num, -1)  # (batch_size, max_node_num, feature*3)
         output = self.tbconv(weightedFeature)  # (batch_size, max_node_num, channel)
         output = self.pool_tree(output) # (batch_size, channel)
@@ -35,7 +35,6 @@ class TBCNN(nn.Module):
         vector1 = output[:batch_size]
         vector2 = output[batch_size:]
         similarity = self.cosin_sim(vector1, vector2)
-
         return similarity
 
     def pool_tree(self, treeFeature):

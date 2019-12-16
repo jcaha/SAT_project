@@ -20,7 +20,7 @@ def unfoldList(childList):
     return returnList
 
 
-def buildTree(rawTree):
+def buildTree(rawTree, withId=True):
 
     if not isinstance(rawTree, (str,Node)):
         return None, 0
@@ -33,8 +33,13 @@ def buildTree(rawTree):
         }
         return astTree, 1
 
+    if withId:
+        name = nodeStr(rawTree)
+    else:
+        name = 'AstNode'
+
     astTree = {
-        'name': 'AstNode',
+        'name': name,
         'children': []
     }
     nodeNum = 1
@@ -50,13 +55,13 @@ def buildTree(rawTree):
     return astTree, nodeNum
 
 
-def getAstNodeList(root):
+def getAstNodeList(root, withId=True):
     # print(root, type(root))
     if '\n' in root['name']:
         print(root['name'])
     nodeList = [root['name']]
     for child in root['children']:
-        nodeList.extend(getAstNodeList(child))
+        nodeList.extend(getAstNodeList(child, withId=True))
     return nodeList
 
 
@@ -82,7 +87,6 @@ def getAstTree(filename):
         data = f.read()
         rawTree = javalang.parse.parse_member_signature(data)
         root, nodeNum = buildTree(rawTree)
-        root['name'] = nodeStr(rawTree)
     return root, nodeNum
 
 if __name__ == "__main__":
@@ -91,11 +95,11 @@ if __name__ == "__main__":
     # rawTree = javalang.parse.parse_member_signature(data)
     # # for child in rawTree.children:
     # #     print(child)
-    root, nodeNum = getAstTree('../data/bigclonebenchdata/40044.txt')
-    print(root)
+    root, nodeNum = getAstTree('../data/bigclonebenchdata/5494012.txt')
+    # print(root)
     clist, wlist = getChildrenList(root)
     print(clist)
-    print(wlist)
+    # print(wlist)
     # root['name'] = 'MethodDeclaration'
     # nodeList = getAstNodeList(root)
     # print(nodeList)

@@ -61,22 +61,29 @@ def getDataList(treeDict, wordEmb):
         embList = []
         for word in wordList:
             embList.append(wordEmb[word])
-
         childrenListDict[treeName] = childrenList
         treeEmb[treeName] = embList
     return childrenListDict, treeEmb
 
 
 if __name__ == "__main__":
-    datasetPath = '../data/bigclonebenchdata/'
-    embPath = '../data/wordEmbedding.pkl'
-    treeList = []
-    print("----------------- start building tree -----------------")
-    for ind, sample in enumerate(os.listdir(datasetPath)):
-        path = os.path.join(datasetPath, sample)
-        root, nodeNum = getAstTree(path)
-        treeList.append(root)
-        if ind%300 == 299:
-            print('{} trees finished.'.format(ind+1))
+    # datasetPath = '../data/bigclonebenchdata/'
+    # embPath = '../data/wordEmbedding.pkl'
+    # treeDict = {}
+    # print("----------------- start building tree -----------------")
+    # for ind, sample in enumerate(os.listdir(datasetPath)):
+    #     path = os.path.join(datasetPath, sample)
+    #     root, nodeNum = getAstTree(path)
+    #     treeDict[sample] = root
+    #     if ind%300 == 299:
+    #         print('{} trees finished.'.format(ind+1))
 
-    getEmbDict(embPath, treeList=treeList)
+    # getEmbDict(embPath, treeList=treeDict)
+
+
+    # test embedding
+    embPath = '../data/wordEmbedding.pkl'
+    embDict = getEmbDict(embPath)
+    root, _ = getAstTree('../data/bigclonebenchdata/5494012.txt')
+    _, treeEmb = getDataList({'5494012.txt':root},embDict)
+    print(treeEmb)

@@ -61,8 +61,9 @@ def convWeights(children):
         torch.zeros(batch_size, max_node_num, max_children_num-1)
     ], dim=2).to(device)
     # print(childrenCnt.equal==torch.zeros_like(childrenCnt))
-    rightWeight = torch.where(childrenCnt==0, oneChild, torch.div(torch.mul(rightWeight,children_mask.float()),childrenCnt.float()))  # (batch_size, max_node_num, max_children_num+1)
-    leftWeitght = 1 - rightWeight
+    rightWeight = torch.where(childrenCnt==1, oneChild, torch.div(torch.mul(rightWeight,children_mask.float()),childrenCnt.float()-1))  # (batch_size, max_node_num, max_children_num+1)
+    leftWeitght = torch.mul(children_mask.float(),1 - rightWeight) # (batch_size, max_node_num, max_children_num+1)
+    # leftWeitght[:,:,0].fill_(0)
     convWeights = torch.cat([
         topWeights.unsqueeze(-1),
         leftWeitght.unsqueeze(-1),
@@ -70,6 +71,64 @@ def convWeights(children):
     ], dim=3)
     return convWeights
 
-
 if __name__ == "__main__":
-    pass
+    '''
+    input:
+        children: (batch_size, max_node_num, max_children_num)
+    output:
+        convWeights: (batch_size, max_node_num, max_children_num+1, 3)
+    '''
+    # convWeights
+    # nodeTensor = torch.tensor([[
+    #     [1,2,3],
+    #     [6,0,0],
+    #     [0,0,0],
+    #     [0,0,0],
+    #     [0,0,0],
+    #     [0,0,0],
+    #     [4,5,0],
+    # ]])
+    # print(convWeights(nodeTensor))  # 1x7x3 -> 1x7x4x3
+
+    '''
+    input:
+        children: (batch_size, max_node_num, max_children_num)
+        nodeEmb: (batch_size, max_node_num, feature_size)
+    output:
+        treeFeature: (batch_size, max_node_num, max_children_num+1, feature_size)
+    '''
+    # gatherFeature
+    # nodeTensor = torch.tensor([[    # 1x7x3
+    #     [1,2,3],
+    #     [6,0,0],
+    #     [0,0,0],
+    #     [0,0,0],
+    #     [0,0,0],
+    #     [0,0,0],
+    #     [4,5,0],
+    # ]])
+    # feature = torch.zeros(1,7,7)
+    # for i in range(7):
+    #     feature[:,i,i] = 1
+    # print(gatherFeature(nodeTensor, feature))   # 1x7x3 -> 1x7x4x7
+
+     
+    # childrenList = torch.tensor([[
+    #     [1,2,3],
+    #     [6,0,0],
+    #     [0,0,0],
+    #     [0,0,0],
+    #     [0,0,0],
+    #     [0,0,0],
+    #     [4,5,0],
+    # ]])
+    # nodeEmb = torch.zeros(1,7,7)
+    # for i in range(7):
+    #     nodeEmb[:,i,i] = 1
+    # feature = gatherFeature(childrenList, nodeEmb)  # feature: (batch_size, max_node_num, max_children_num+1, feature)
+    # weights = convWeights(childrenList)  # (batch_size, max_node_num, max_children_num+1, 3)
+    # print(weights.transpose(2,3).shape)
+    # print(feature.shape)
+    # weightedFeature = torch.matmul(weights.transpose(2,3), feature)  # weight of Ws: (batch_size, max_node_num, feature, 3)
+    # weightedFeature = weightedFeature.reshape(1, 7, -1)  # (batch_size, max_node_num, feature*3)
+    # print(weightedFeature)  # (1, 7, 21)
