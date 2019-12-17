@@ -1,18 +1,22 @@
 # SAT_project
-Our project aims to provide a deep learning solution for code clone detection.
-## What is Software clone
-软件系统中克隆代码的检测与管理是软件工程中的基本问题之一。
+> Software clone , aiming at identifying out code fragments with similar functionalities, has played an important role in software maintenance and evolution.
+## TBCCD: A method of code clone  
+TBCDD is a method proposed for detecting code clones in this [paper](http://taoxie.cs.illinois.edu/publications/icpc19-clone.pdf), where a Tree-based CNN is introduced into this task. In this method, the ASTs of Java/C source codes are generated. Then words of all nodes in ASTs are embedded by a combined character-wise one-hot encoder. Based on the embedding, Tree-based CNNs are employed to extract Ast-level representation. At last, the model predict whether a pair of codes are cloned ones by comparing their features' cosine similarity. Here we newly implement a pytorch version of TBCDD, which has been proved powerful in detecting cloned codes.
 
-程序员为了提高开发效率经常对软件系统的源代码进行拷贝粘贴及修改，这种重用机制通常会导致在源代码中出现很多相同或相似的代码段，这类代码段被称为**克隆代码**。
+## How to use our pytorch version TBCDD
+Firstly, you need to get similarity matrix and dataset in [Baidu Netdisk](https://pan.baidu.com/s/1hfODR1316f3ZQw9eUa_ztA) with code 06mo. You should put them into /data/ and unzip the dataset.
 
-## Why should we pay attention to cloned codes
-- 克隆代码导致源代码的规模增大即冗余，增加了资源的需求，这对嵌入式系统和手持设备的影响尤为明显。
-- 克隆一段含有未知BUG的代码,可能会导致BUG的繁育。
-- 维护者修改一段代码时,需对这段代码的所有克隆进行一致的修改,若修改不一致则会引入新的BUG。
-为了更好地解决这些弊端，我们需要对系统进行克隆代码检测。
+Then, you have to generate your own train/val/test datasets by directly running 
+```
+python ./preprocess/genFuncList.py
+```
 
-## What is code clone detection
-> Software clone detection, aiming at identifying out code fragments with similar functionalities, has played an important role in software maintenance and evolution.
+Having prepared datasets, you can run 
 
-## dataset for deep learning
-BigCloneBench in [Baidu Netdisk](https://pan.baidu.com/s/1DK6XJmfj_oKWqDvkm0ehlQ) with code vffp.
+```
+python ./src/train_model.py
+```
+to train the TBCDD model and see results in test sets.
+
+## required packages
+python3.7, pytorch1.1.0, javalang, pickle, numpy
