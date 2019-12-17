@@ -12,9 +12,6 @@ def alignChildren(childrenList):
     '''
     maxNum = max([len(children) for s in childrenList for children in s])
     returnList = [[c+[0]*(maxNum-len(c)) for c in s] for s in childrenList]
-    # returnList = [[[np.array(1)] for c in s] for s in childrenList]
-    # print(returnList[0][50])
-    # print(len(returnList[0][2]))
     maxNode = max([len(s) for s in childrenList])
     returnList = [s+[[0]*maxNum]*(maxNode-len(s)) for s in returnList]
     return returnList

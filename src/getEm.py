@@ -23,13 +23,19 @@ def getCharEmbedding():
         charEmbDict[char] = charEmb
     return charEmbDict
 
-def getEmbDict(embDictPath, treeList=None):
+def getEmbDict(embDictPath, datasetPath=None):
     if os.path.isfile(embDictPath):
         embeddingDict = pickle.load(open(embDictPath,'rb'))
         return embeddingDict
-    if treeList is None:
-        print("please input treeList to getEmbDict")
+    if datasetPath is None:
+        print("please input dataset path.")
         assert 0
+
+    treeList = []
+    for func in os.listdir(datasetPath):
+        funcPath = os.path.join(datasetPath, func)
+        root, _ = getAstTree(funcPath)
+        treeList.append(root)
 
     embeddingDict = {}
     wordList = []
@@ -37,7 +43,7 @@ def getEmbDict(embDictPath, treeList=None):
 
     print("-------------- start generate embedding ---------------")
 
-    for num, tree in enumerate(treeList.values()):
+    for num, tree in enumerate(treeList):
         wordList.extend(getAstNodeList(tree))
         wordList = list(set(wordList))
         if num%300 == 299:
