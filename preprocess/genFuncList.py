@@ -3,6 +3,7 @@ import random
 import numpy as np
 
 datasetPath = '../data/bigclonebenchdata/'
+funcMapPath = '../data/functions.txt'
 simMatPath = '../data/similarity.txt'
 testListPath = '../data/testFuncList.txt'
 valListPath = '../data/valFuncList.txt'
@@ -18,16 +19,18 @@ def writeList(contentListIndex, funcList, path):
             f.write(funcList[item])
             f.write('\t')
 
-def writePair(contentListIndex, funcList, simMat, pairPath):
+def writePair(contentListIndex, funcList, funcDict, simMat, pairPath):
     with open(pairPath, 'w') as f:
         funcNum = len(contentListIndex)
         for i in range(funcNum):
             for j in range(i+1, funcNum):
-                x = contentListIndex[i]
+                x = contentListIndex[i]  # ind in funcList
                 y = contentListIndex[j]
-                x_name = funcList[x]
+                x_name = funcList[x]     # func_name
                 y_name = funcList[y]
-                label = simMat[x,y]
+                x_mat_ind = funcDict[x_name]    # func_mat_ind
+                y_mat_ind = funcDict[y_name]
+                label = simMat[x_mat_ind,y_mat_ind]
                 f.write(x_name + '\t' + y_name + '\t' + str(label) + '\n')
 
 # set args
@@ -37,73 +40,6 @@ valNum = 500
 trainNum = 8000
 
 if __name__ == "__main__":
-    # if not os.path.exists(trainListPath) and reGenSplits:
-    #     funcList = []
-    #     funcDict = {}
-    #     for ind, func in enumerate(os.listdir(datasetPath)):
-    #         funcList.append(func)
-    #         funcDict[func] = ind
-    #     random.shuffle(funcList)
-    #     testList = funcList[:testNum]
-    #     valList = funcList[testNum:testNum+valNum]
-    #     trainList = funcList[testNum+valNum: testNum+valNum+trainNum]
-    #     funcList = testList + valList + trainList
-    #     writeList(testList, testListPath)
-    #     writeList(valList, valListPath)
-    #     writeList(trainList, trainListPath)
-    # elif not os.path.exists(trainListPath):
-    #     assert 0
-    # else:
-    #     funcDict = {}
-    #     for ind, func in enumerate(os.listdir(datasetPath)):
-    #         funcDict[func] = ind
-    #     testList = readList(testListPath)
-    #     valList = readList(valListPath)
-    #     trainList = readList(trainListPath)
-    #     funcList = testList + valList + trainList
-
-    # indexDict = {}
-    # for ind, func in enumerate(funcList):   # map oldIndex: newIndex
-    #     indexDict[funcDict[func]] = ind
-
-    # testPairFile = open(testPairPath, 'w')
-    # valPairFile = open(valPairPath, 'w')
-    # trainPairFile = open(trainPairPath, 'w')
-
-    # with open(simMatPath, 'r') as fmat:
-    #     line = fmat.readline()
-    #     firstInd = 0
-    #     while line:
-    #         line = line.strip('\n').split(' ')
-    #         if len(line) < 1 or firstInd not in indexDict.keys():
-    #             line = fmat.readline()
-    #             firstInd += 1
-    #             continue
-    #         newFirstInd = indexDict[firstInd]
-    #         firstFunc = funcList[newFirstInd]
-    #         for secondInd, label in enumerate(line[firstInd:]):
-    #             if secondInd not in indexDict.keys():
-    #                 continue
-    #             newSecondInd = indexDict[secondInd]
-    #             secondFunc = funcList[newSecondInd]
-    #             if label[0] == '0' or label[0] == '-':
-    #                 label = '-1'
-    #             else:
-    #                 label = '1'
-    #             pair = firstFunc + '\t' + secondFunc + '\t' + label + '\n'
-    #             if isTest(newFirstInd) and isTest(newSecondInd):
-    #                 testPairFile.write(pair)
-    #             elif isVal(newFirstInd) and isVal(newSecondInd):
-    #                 valPairFile.write(pair)
-    #             elif isTrain(newFirstInd) and isTrain(newSecondInd):
-    #                 trainPairFile.write(pair)
-
-    #         line = fmat.readline()
-    #         firstInd += 1
-
-    # testPairFile.close()
-    # valPairFile.close()
-    # trainPairFile.close()
     if os.path.exists(trainListPath):
         print('there has been trainList.')
         assert 0
@@ -123,6 +59,19 @@ if __name__ == "__main__":
     writeList(testListIndex, funcList, testListPath)
     writeList(valListIndex, funcList, valListPath)
 
+    funcDict = {}   # func_name: id in simMat
+    with open(funcMapPath, 'r') as f:
+        ind = 0
+        while True:
+            line = f.readline()
+            line = line.split('\t')
+            if line[0] == 'FUNCTION_ID:':
+                func = line[1].rstrip('\n').rstrip('\r') + '.txt'
+                funcDict[func] = ind
+                ind += 1
+                if ind == 9134:
+                    break
+
     with open(simMatPath, 'r') as f:
         data = f.read()
         dataMat = data.strip('\n').split('\n')
@@ -133,11 +82,11 @@ if __name__ == "__main__":
             for indy, like in enumerate(simLine):
                 if indx == indy:
                     continue
-                if like[0]=='-' or like[0]=='0':
+                if like[0] =='-' or like[0] =='0':
                     like = -1
                 elif like[0] == '1':
                     like = 1
                 simMat[indx, indy] = like
-        writePair(trainListIndex, funcList, simMat, trainPairPath)
-        writePair(testListIndex, funcList, simMat, testPairPath)
-        writePair(valListIndex, funcList, simMat, valPairPath)
+        writePair(trainListIndex, funcList, funcDict, simMat, trainPairPath)
+        writePair(testListIndex, funcList, funcDict, simMat, testPairPath)
+        writePair(valListIndex, funcList, funcDict, simMat, valPairPath)

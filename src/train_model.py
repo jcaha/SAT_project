@@ -13,7 +13,7 @@ from utils import loadDataList
 
 data_list_dir = '../data'
 dataset_path = '../data/bigclonebenchdata'
-os.environ["CUDA_VISIBLE_DEVICES"] = "1"
+os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 miniSet = True
 miniRatio = 0.05
 
