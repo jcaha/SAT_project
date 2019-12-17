@@ -17,3 +17,6 @@ Having prepared datasets, you can run
 python ./src/train_model.py
 ```
 to train the TBCDD model and see results in test sets.
+
+## required packages
+python3.7, pytorch1.1.0, javalang, pickle, numpy
