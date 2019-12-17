@@ -7,13 +7,13 @@ TBCDD is a method proposed for detecting code clones in this [paper](http://taox
 Firstly, you need to get similarity matrix and dataset in [Baidu Netdisk]() with code    . You should put them into /data/ and unzip the dataset.
 
 Then, you have to generate your own train/val/test datasets by directly running 
-'''
+```
 python ./preprocess/genFuncList.py
-'''
+```
 
 Having prepared datasets, you can run 
 
-'''
+```
 python ./src/train_model.py
-'''
+```
 to train the TBCDD model and see results in test sets.
