@@ -16,6 +16,9 @@ dataset_path = '../data/bigclonebenchdata'
 os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 miniSet = True
 miniRatio = 0.05
+model_path = '../data/models'
+load_model = -1
+model_name = 'tbcnn'
 
 def f1_eval(scores, annos, thres):
     pred = (scores > thres).astype(int)
@@ -36,16 +39,18 @@ def eval_model(scores, annos, thres=None):
     selected_thres = -1
     max_f1 = 0
     if thres is None:
-        for thres in range(-0.9, 0.9999, 0.1):
+        for thres in range(-9, 10):
+            thres = thres*0.1
             recall, precision, f1 = f1_eval(scores, annos, thres)
             if f1 > max_f1:
                 max_pred = precision
                 selected_thres = thres
-            print('val thres {}, recall {}, prec {}, f1 {}'.format(round(thres,1), recall, precision, thres))
+            print('val thres {}, recall {}, prec {}, f1 {}'.format(round(thres,1), recall, precision, f1))
     else:
         recall, precision, f1 = f1_eval(scores, annos, thres)
-        print('test thres {}, recall {}, prec {}, f1 {}'.format(round(thres,1), recall, precision, thres))
-    return thres
+        print('test thres {}, recall {}, prec {}, f1 {}'.format(round(thres,1), recall, precision, f1))
+        selected_thres = thres
+    return selected_thres
 
 def prepareData(data_list_dir, dataset, wordEmb, mode, batch_size=1):
     funcList, rawPairList = loadDataList(data_list_dir, mode=mode)
@@ -81,7 +86,18 @@ def prepareData(data_list_dir, dataset, wordEmb, mode, batch_size=1):
 def train():
 
     epoch_num = 10
-    tbcnn = TBCNN(channels=[78, 600, 50]).cuda()
+    device = torch.device("cuda")
+    tbcnn = TBCNN(channels=[78, 600, 50]).to(device)
+
+    if not os.path.exists(model_path):
+        os.mkdir(model_path)
+
+    if load_model > 0:
+        model_save_path = os.path.join(model_path, '{}_{}.pth'.format(model_name, load_model))
+        params = torch.load(model_save_path, map_location=device)
+        tbcnn.load_state_dict(params)
+        print('load model from epoch {} of {}.'.format(load_model, model_name))
+
     criterion = nn.MSELoss()
     optimizer = optim.SGD(params=tbcnn.parameters(), lr=0.0002)
 
@@ -93,6 +109,8 @@ def train():
     for epoch_num in range(epoch_num):
         total_loss = 0
         for ind, data in enumerate(trainLoader):
+            # if ind == 10000:
+            #     break
             childrenList, emb, label = data
 
             childrenList = childrenList.squeeze(0).cuda()
@@ -105,9 +123,12 @@ def train():
             loss.backward()
             optimizer.step()
             total_loss += loss.cpu().detach().item()
-            if ind%5000 == 4999:
+            if ind%50000 == 49999:
                 print("{} loss: {}".format(ind+1,total_loss/5000))
                 total_loss = 0
+
+        torch.save(tbcnn.state_dict(), os.path.join(model_path,'{}_{}.pth'.format(model_name, epoch_num+1)))
+        print('save model from epoch {} of {}.'.format(epoch_num+1, model_name))
 
         with torch.no_grad():
             scores = []
